@@ -76,11 +76,36 @@ let rec multifun f n =
     | 1 -> f
     | _ -> fun x -> (multifun f (n - 1)) (f x) ;;
 
-let rec ltake _ _ = raise Not_implemented
-let rec lall _ _ = raise Not_implemented
-let rec lmap _ _ = raise Not_implemented
-let rec lrev _ = raise Not_implemented
-let rec lzip _ _ = raise Not_implemented
-let rec split _ = raise Not_implemented
-let rec cartprod _ _ = raise Not_implemented
-
+let rec ltake l n =
+    match l, n with
+    | [], _ -> []
+    | _, 0 -> []
+    | h :: t, n -> h :: ltake t (n - 1) ;;
+let rec lall f l =
+    match l with
+    | [] -> true
+    | h :: t -> f h && lall f t ;;
+let rec lmap f l =
+    match l with
+    | [] -> []
+    | h :: t -> f h :: lmap f t ;;
+let rec lrev l =
+    match l with
+    | [] -> []
+    | h :: t -> lrev t @ [h] ;;
+let rec lzip l1 l2 =
+    match l1, l2 with
+    | h1 :: t1, h2 :: t2 -> (h1, h2) :: lzip t1 t2
+    | _ -> [] ;;
+let rec split l =
+    match l with
+    | [] -> ([], [])
+    | h :: [] -> ([h], [])
+    | h1 :: h2 :: t -> let (l1, l2) = split t in (h1 :: l1, h2 :: l2) ;;
+let rec cartprod l1 l2 =
+    match l1, l2 with
+    | [], _ -> []
+    | _, [] -> []
+    | h1 :: [], h2 :: [] -> [(h1, h2)]
+    | h1 :: [], h2 :: t2 -> (h1, h2) :: cartprod [h1] t2
+    | h1 :: t1, _ -> cartprod [h1] l2 @ cartprod t1 l2 ;;
