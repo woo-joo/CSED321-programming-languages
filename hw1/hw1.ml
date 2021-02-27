@@ -30,10 +30,27 @@ let rec max l =
         if h > max t then h
         else max t ;;
 
-let rec sum_tree _ = raise Not_implemented
-let rec depth _ = raise Not_implemented
-let rec bin_search _ _ = raise Not_implemented
-let rec preorder _ = raise Not_implemented
+let rec sum_tree t =
+    match t with
+    | Leaf l -> l
+    | Node (t1, l, t2) -> sum_tree t1 + l + sum_tree t2 ;;
+let rec depth t =
+    match t with
+    | Leaf l -> 0
+    | Node (t1, l, t2) ->
+        if depth t1 > depth t2 then depth t1 + 1
+        else depth t2 + 1 ;;
+let rec bin_search t x =
+    match t with
+    | Leaf l -> x = l
+    | Node (t1, l, t2) ->
+        if x < l then bin_search t1 x
+        else if x > l then bin_search t2 x
+        else true ;;
+let rec preorder t =
+    match t with
+    | Leaf l -> [l]
+    | Node (t1, l, t2) -> l :: (preorder t1 @ preorder t2) ;;
 
 let rec list_add _ _ = raise Not_implemented
 let rec insert _ _ = raise Not_implemented 
