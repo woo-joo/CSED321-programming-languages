@@ -52,9 +52,21 @@ let rec preorder t =
     | Leaf l -> [l]
     | Node (t1, l, t2) -> l :: (preorder t1 @ preorder t2) ;;
 
-let rec list_add _ _ = raise Not_implemented
-let rec insert _ _ = raise Not_implemented 
-let rec insort _ = raise Not_implemented 
+let rec list_add l1 l2 =
+    match l1, l2 with
+    | [], _ -> l2
+    | _, [] -> l1
+    | h1 :: t1, h2 :: t2 -> (h1 + h2) :: list_add t1 t2 ;;
+let rec insert m l =
+    match l with
+    | [] -> [m]
+    | h :: t ->
+        if m < h then m :: h :: t
+        else h :: insert m t ;;
+let rec insort l =
+    match l with
+    | [] -> []
+    | h :: t -> insert h (insort t) ;;
 
 let rec compose _ _  = raise Not_implemented 
 let rec curry _ _ _ = raise Not_implemented 
