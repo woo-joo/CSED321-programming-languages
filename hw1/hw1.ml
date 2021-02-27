@@ -68,10 +68,13 @@ let rec insort l =
     | [] -> []
     | h :: t -> insert h (insort t) ;;
 
-let rec compose _ _  = raise Not_implemented 
-let rec curry _ _ _ = raise Not_implemented 
-let rec uncurry _ _ = raise Not_implemented
-let rec multifun _ _ = raise Not_implemented
+let rec compose f g  = fun x -> g (f x) ;;
+let rec curry f x y = f (x, y) ;;
+let rec uncurry f (x, y) = f x y ;;
+let rec multifun f n =
+    match n with
+    | 1 -> f
+    | _ -> fun x -> (multifun f (n - 1)) (f x) ;;
 
 let rec ltake _ _ = raise Not_implemented
 let rec lall _ _ = raise Not_implemented
