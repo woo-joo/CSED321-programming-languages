@@ -79,7 +79,7 @@ let rec multifun f n =
 let rec ltake l n =
     match l, n with
     | [], _ -> []
-    | _, 0 -> []
+    | _, _ when n <= 0 -> []
     | h :: t, n -> h :: ltake t (n - 1) ;;
 let rec lall f l =
     match l with
