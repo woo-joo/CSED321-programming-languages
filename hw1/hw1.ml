@@ -16,12 +16,9 @@ let rec fib n =
     | 1 -> 1
     | _ -> fib (n - 1) + fib (n - 2) ;;
 let rec gcd m n =
-    match m, n with
-    | 0, _ -> n
-    | _, 0 -> m
-    | _ ->
-        if m > n then gcd (m mod n) n
-        else gcd m (n mod m) ;;
+    match n with
+    | 0 -> m
+    | _ -> gcd n (m mod n) ;;
 let rec max l =
     match l with
     | [] -> 0
@@ -50,7 +47,7 @@ let rec bin_search t x =
 let rec preorder t =
     match t with
     | Leaf l -> [l]
-    | Node (t1, l, t2) -> l :: (preorder t1 @ preorder t2) ;;
+    | Node (t1, l, t2) -> l :: preorder t1 @ preorder t2 ;;
 
 let rec list_add l1 l2 =
     match l1, l2 with
@@ -106,6 +103,4 @@ let rec cartprod l1 l2 =
     match l1, l2 with
     | [], _ -> []
     | _, [] -> []
-    | h1 :: [], h2 :: [] -> [(h1, h2)]
-    | h1 :: [], h2 :: t2 -> (h1, h2) :: cartprod [h1] t2
-    | h1 :: t1, _ -> cartprod [h1] l2 @ cartprod t1 l2 ;;
+    | h1 :: t1, h2 :: t2 -> (h1, h2) :: cartprod [h1] t2 @ cartprod t1 l2 ;;

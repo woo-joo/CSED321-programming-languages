@@ -73,7 +73,7 @@ let max_score = test1 "max" 4 max max_test
 
 let int_tot_score = 19
 let int_res_score = sum_score + fac_score + fib_score + gcd_score + max_score
-let _ = print_score "functions on integers" int_tot_score int_res_score
+let _ = print_score "functions on integers" int_res_score int_tot_score
 
 
 
@@ -84,7 +84,7 @@ let preorder_score = test1 "preorder" 4 preorder preorder_test
 
 let bin_tree_tot_score = 16
 let bin_tree_res_score = sum_tree_score + depth_score + bin_search_score + preorder_score
-let _ = print_score "functions on binary trees" bin_tree_tot_score bin_tree_res_score
+let _ = print_score "functions on binary trees" bin_tree_res_score bin_tree_tot_score
 
 
 
@@ -94,7 +94,7 @@ let insort_score = test1 "insort" 4 insort insort_test
 
 let int_list_tot_score = 12
 let int_list_res_score = list_add_score + insert_score + insort_score
-let _ = print_score "functions on list of integers" int_list_tot_score int_list_res_score
+let _ = print_score "functions on list of integers" int_list_res_score int_list_tot_score
 
 
 
@@ -118,7 +118,7 @@ let multifun_score =
 
 let higher_tot_score = 16
 let higher_res_score = compose_score + curry_score + uncurry_score + multifun_score
-let _ = print_score "higher-order functions" higher_tot_score higher_res_score
+let _ = print_score "higher-order functions" higher_res_score higher_tot_score
 
 
 
@@ -132,11 +132,11 @@ let cartprod_score = test2 "cartprod" 7 cartprod cartprod_test
 
 let list_tot_score = 37
 let list_res_score = ltake_score + lall_score + lmap_score + lrev_score + lzip_score + split_score + cartprod_score
-let _ = print_score "functions on 'a list" list_tot_score list_res_score
+let _ = print_score "functions on 'a list" list_res_score list_tot_score
 
 
 
 let tot_score = 100
 let res_score = int_res_score + bin_tree_res_score + int_list_res_score + higher_res_score + list_res_score
 let _ = Printf.printf "--------------------------------------------------\n\n"
-let _ = print_score "total" tot_score res_score
+let _ = print_score "total" res_score tot_score
