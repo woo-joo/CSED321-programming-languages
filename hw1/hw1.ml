@@ -55,7 +55,6 @@ let rec list_add l1 l2 =
     | h1 :: t1, h2 :: t2 -> (h1 + h2) :: list_add t1 t2 ;;
 let rec insert m l =
     match l with
-    | [] -> [m]
     | h :: t when m > h -> h :: insert m t
     | _ -> m :: l ;;
 let rec insort l =
