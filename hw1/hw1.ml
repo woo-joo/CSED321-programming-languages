@@ -40,10 +40,9 @@ let rec depth t =
 let rec bin_search t x =
     match t with
     | Leaf l -> x = l
-    | Node (t1, l, t2) ->
-        if x < l then bin_search t1 x
-        else if x > l then bin_search t2 x
-        else true ;;
+    | Node (t1, l, t2) when x < l -> bin_search t1 x
+    | Node (t1, l, t2) when x > l -> bin_search t2 x
+    | _ -> true ;;
 let rec preorder t =
     match t with
     | Leaf l -> [l]
@@ -57,9 +56,8 @@ let rec list_add l1 l2 =
 let rec insert m l =
     match l with
     | [] -> [m]
-    | h :: t ->
-        if m < h then m :: h :: t
-        else h :: insert m t ;;
+    | h :: t when m > h -> h :: insert m t
+    | _ -> m :: l ;;
 let rec insort l =
     match l with
     | [] -> []
