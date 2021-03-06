@@ -51,10 +51,10 @@ let ltabulate n f =
         | _ -> ltabulate_aux (n - 1) f (f (n - 1) :: acc)
     in ltabulate_aux n f [] ;;
 
-let rec union s t =
-    match s with
-    | [] -> t
-    | hs :: ts -> union ts (hs :: lfilter (fun x -> x <> hs) t) ;;
+let rec union s1 s2 =
+    match s1 with
+    | [] -> s2
+    | h :: t -> union t (h :: lfilter (fun x -> x <> h) s2) ;;
 
 let inorder t =
     let rec inorder_aux t acc =
@@ -79,10 +79,42 @@ let preorder t =
 
 (** Sorting in the ascending order **)
 
-let rec quicksort _ = raise NotImplemented
+let rec quicksort l =
+    match l with
+    | [] -> []
+    | h :: t -> quicksort (lfilter (fun x -> x <= h) t) @ [h] @ quicksort (lfilter (fun x -> x > h) t)
 
-let rec mergesort _ = raise NotImplemented
-			
+let rec mergesort l =
+    match l with
+    | [] -> []
+    | [h] -> [h]
+    | _ ->
+        let rec len l acc =
+            match l with
+            | [] -> acc
+            | h :: t -> len t (1 + acc)
+        in
+        let rec divide n l acc =
+            match l with
+            | [] -> acc
+            | h :: t ->
+                let (l1, l2) = acc in
+                match n with
+                | 0 -> (l1, l2 @ l)
+                | _ -> divide (n - 1) t (l1 @ [h], l2)
+        in
+        let rec merge l1 l2 acc =
+            match l1, l2 with
+            | [], _ -> acc @ l2
+            | _, [] -> acc @ l1
+            | h1 :: t1, h2 :: t2 ->
+                if h1 < h2
+                then merge t1 l2 (acc @ [h1])
+                else merge l1 t2 (acc @ [h2])
+        in
+        let (l1, l2) = divide ((len l 0) / 2) l ([], []) in
+        merge (mergesort l1) (mergesort l2) [] ;;
+
 (** Structures **)
 
 module type HEAP = 
