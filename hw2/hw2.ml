@@ -127,7 +127,7 @@ module type HEAP =
     val dereference : 'a heap -> loc -> 'a 
     val update : 'a heap -> loc -> 'a -> 'a heap
   end
-    
+
 module type DICT =
   sig
     type key
@@ -142,33 +142,45 @@ module Heap : HEAP =
   struct
     exception InvalidLocation 
 		
-    type loc = unit       (* dummy type, to be chosen by students *) 
-    type 'a heap = unit   (* dummy type, to be chosen by students *)
+    type loc = int
+    type 'a heap = (loc * 'a) list
 
-    let empty _ = raise NotImplemented
-    let allocate _ _ = raise NotImplemented
-    let dereference _ _ = raise NotImplemented
-    let update _ _ _ = raise NotImplemented
+    let empty () = []
+    let allocate h v = let l = List.length h in ((l, v) :: h, l)
+    let dereference h l =
+        try
+            let (_, v) = List.find (fun (l_, _) -> l_ = l) h in v
+        with Not_found -> raise InvalidLocation
+    let update h l v =
+        try
+            let _ = List.find (fun (l_, _) -> l_ = l) h
+            in (l, v) :: lfilter (fun (l_, _) -> l_ <> l) h
+        with Not_found -> raise InvalidLocation
   end
-    
+
 module DictList : DICT with type key = string =
   struct
     type key = string
     type 'a dict = (key * 'a) list
 			      
-    let empty _ = raise NotImplemented
-    let lookup _ _ = raise NotImplemented
-    let delete _ _ = raise NotImplemented 
-    let insert _ _ = raise NotImplemented
+    let empty () = []
+    let lookup d k =
+        try
+            let (_, v) = List.find (fun (k_, _) -> k_ = k) d
+            in Some v
+        with Not_found -> None
+    let delete d k = lfilter (fun (k_, _) -> k_ <> k) d
+    let insert d (k, v) = (k, v) :: delete d k
   end
-    
+
 module DictFun : DICT with type key = string =
   struct
     type key = string
     type 'a dict = key -> 'a option
 			     
-    let empty _ = raise NotImplemented
-    let lookup _ _ = raise NotImplemented
-    let delete _ _ = raise NotImplemented
-    let insert _ _ = raise NotImplemented
+    let empty () = fun _ -> None
+    let lookup d k = d k
+    let insert_ d (k, v) = fun k_ -> if k_ = k then v else d k_
+    let delete d k = insert_ d (k, None)
+    let insert d (k, v) = insert_ d (k, Some v)
   end
