@@ -4,10 +4,16 @@ type 'a tree = Leaf of 'a | Node of 'a tree * 'a * 'a tree
 						      
 (** Recursive functions **)
 
-let rec lconcat _ = raise NotImplemented 
+let rec lconcat l =
+  match l with
+  | [] -> []
+  | h :: t -> h @ lconcat t ;;
 
-let rec lfoldl _ _ _ = raise NotImplemented					
-			 
+let rec lfoldl f e l =
+  match l with
+  | [] -> e
+  | h :: t -> lfoldl f (f (h, e)) t ;;
+
 (** Tail recursive functions  **)
 
 let fact _ = raise NotImplemented
