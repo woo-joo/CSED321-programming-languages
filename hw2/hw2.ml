@@ -5,35 +5,78 @@ type 'a tree = Leaf of 'a | Node of 'a tree * 'a * 'a tree
 (** Recursive functions **)
 
 let rec lconcat l =
-  match l with
-  | [] -> []
-  | h :: t -> h @ lconcat t ;;
+    match l with
+    | [] -> []
+    | h :: t -> h @ lconcat t ;;
 
 let rec lfoldl f e l =
-  match l with
-  | [] -> e
-  | h :: t -> lfoldl f (f (h, e)) t ;;
+    match l with
+    | [] -> e
+    | h :: t -> lfoldl f (f (h, e)) t ;;
 
 (** Tail recursive functions  **)
 
-let fact _ = raise NotImplemented
+let fact n =
+    let rec fact_aux n acc =
+        match n with
+        | 0 -> acc
+        | _ -> fact_aux (n - 1) (acc * n)
+    in fact_aux n 1 ;;
 
-let power _ _ = raise NotImplemented
+let power x n =
+    let rec power_aux x n acc =
+        match n with
+        | 0 -> acc
+        | _ -> power_aux x (n - 1) (acc * x)
+    in power_aux x n 1 ;;
 
-let fib _ = raise NotImplemented
+let fib n =
+    let rec fib_aux n acc1 acc2 =
+        match n with
+        | 0 -> acc2
+        | _ -> fib_aux (n - 1) acc2 (acc1 + acc2)
+    in fib_aux n 0 1 ;;
 
-let lfilter _ _ = raise NotImplemented
+let lfilter p l =
+    let rec lfilter_aux p l acc =
+        match l with
+        | [] -> acc
+        | h :: t -> lfilter_aux p t (if p h then acc @ [h] else acc)
+    in lfilter_aux p l [] ;;
 
-let ltabulate _ _ = raise NotImplemented
+let ltabulate n f =
+    let rec ltabulate_aux n f acc =
+        match n with
+        | 0 -> acc
+        | _ -> ltabulate_aux (n - 1) f (f (n - 1) :: acc)
+    in ltabulate_aux n f [] ;;
 
-let union _ _ = raise NotImplemented
+let rec union s t =
+    match s with
+    | [] -> t
+    | hs :: ts -> union ts (hs :: lfilter (fun x -> x <> hs) t) ;;
 
-let inorder t = raise NotImplemented 
+let inorder t =
+    let rec inorder_aux t acc =
+        match t with
+        | Leaf l -> l :: acc
+        | Node (t1, l, t2) -> inorder_aux t1 (l :: inorder_aux t2 acc)
+    in inorder_aux t [] ;;
 	   
-let postorder _ = raise NotImplemented
+let postorder t =
+    let rec postorder_aux t acc =
+        match t with
+        | Leaf l -> l :: acc
+        | Node (t1, l, t2) -> postorder_aux t1 (postorder_aux t2 (l :: acc))
+    in postorder_aux t [] ;;
 
-let preorder _ = raise NotImplemented    
-		       
+let preorder t =
+    let rec preorder_aux t acc =
+        match t with
+        | Leaf l -> acc @ [l]
+        | Node (t1, l, t2) -> preorder_aux t2 (preorder_aux t1 (acc @ [l]))
+    in preorder_aux t [] ;;
+
 (** Sorting in the ascending order **)
 
 let rec quicksort _ = raise NotImplemented
