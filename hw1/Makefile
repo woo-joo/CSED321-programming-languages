@@ -1,17 +1,19 @@
 CAMLC	 	  = ocamlc
 CAMLOPT		= ocamlopt
-CAMLCFLAG = 
+CAMLCFLAG = -thread 
 CAMLDEP=ocamldep
 
 CAMLYACC=ocamlyacc
 YACCFLAGS=-v
 CAMLLEX=ocamllex
 
-TARGET = hw1
-OBJ = hw1.cmo
+TARGET = hw1test
+OBJ = \
+	hw1.cmo \
+	hw1sol.cmo hw1test.cmo 
 
 all: $(OBJ)
-	$(CAMLC) $(CAMLCFLAG) -o $(TARGET) $(OBJ) 
+	$(CAMLC) -thread -o $(TARGET) unix.cma threads.cma $(OBJ) 
 
 clean:
 	rm -f $(TARGET) *.annot *.aux *.log *.cm[iox] *.dvi 

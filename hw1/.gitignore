@@ -1,3 +1,4 @@
 hw1
-hw1.cmi
-hw1.cmo
+hw1test
+*.cmi
+*.cmo
