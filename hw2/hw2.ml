@@ -89,19 +89,12 @@ let rec mergesort l =
     | [] -> []
     | [h] -> [h]
     | _ ->
-        let rec len l acc =
+        let rec split l acc =
+            let (l1, l2) = acc in
             match l with
             | [] -> acc
-            | h :: t -> len t (1 + acc)
-        in
-        let rec divide n l acc =
-            match l with
-            | [] -> acc
-            | h :: t ->
-                let (l1, l2) = acc in
-                match n with
-                | 0 -> (l1, l2 @ l)
-                | _ -> divide (n - 1) t (l1 @ [h], l2)
+            | h :: [] -> (l1 @ [h], l2)
+            | h1 :: h2 :: t -> split t (l1 @ [h1], l2 @ [h2])
         in
         let rec merge l1 l2 acc =
             match l1, l2 with
@@ -112,7 +105,7 @@ let rec mergesort l =
                 then merge t1 l2 (acc @ [h1])
                 else merge l1 t2 (acc @ [h2])
         in
-        let (l1, l2) = divide ((len l 0) / 2) l ([], []) in
+        let (l1, l2) = split l ([], []) in
         merge (mergesort l1) (mergesort l2) [] ;;
 
 (** Structures **)
@@ -166,8 +159,7 @@ module DictList : DICT with type key = string =
     let empty () = []
     let lookup d k =
         try
-            let (_, v) = List.find (fun (k_, _) -> k_ = k) d
-            in Some v
+            let (_, v) = List.find (fun (k_, _) -> k_ = k) d in Some v
         with Not_found -> None
     let delete d k = lfilter (fun (k_, _) -> k_ <> k) d
     let insert d (k, v) = (k, v) :: delete d k
