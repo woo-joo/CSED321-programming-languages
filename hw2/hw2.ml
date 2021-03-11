@@ -172,7 +172,6 @@ module DictFun : DICT with type key = string =
 			     
     let empty () = fun _ -> None
     let lookup d k = d k
-    let insert_ d (k, v) = fun k_ -> if k_ = k then v else d k_
-    let delete d k = insert_ d (k, None)
-    let insert d (k, v) = insert_ d (k, Some v)
+    let delete d k = fun k_ -> if k_ = k then None else d k_
+    let insert d (k, v) = fun k_ -> if k_ = k then Some v else d k_
   end
