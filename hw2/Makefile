@@ -1,17 +1,17 @@
 CAMLC	 	  = ocamlc
 CAMLOPT		= ocamlopt
-CAMLCFLAG = 
+CAMLCFLAG = -thread 
 CAMLDEP=ocamldep
 
 CAMLYACC=ocamlyacc
 YACCFLAGS=-v
 CAMLLEX=ocamllex
 
-TARGET = hw2
-OBJ = hw2.cmo
+TARGET = hw2test
+OBJ = hw2.cmo hw2sol.cmo hw2test.cmo
 
 all: $(OBJ)
-	$(CAMLC) $(CAMLCFLAG) -o $(TARGET) $(OBJ) 
+	$(CAMLC) -thread -o $(TARGET) unix.cma threads.cma $(OBJ) 
 
 clean:
 	rm -f $(TARGET) *.annot *.aux *.log *.cm[iox] *.dvi 
@@ -31,3 +31,4 @@ depend:
 .PHONY: depend
 
 include .depend
+
