@@ -32,9 +32,9 @@ struct
     let zero = false
     let one = true
 
-    let (++) x y = raise NotImplemented
-    let ( ** ) x y = raise NotImplemented
-    let (==) x y = raise NotImplemented
+    let (++) x y = x || y
+    let ( ** ) x y = x && y
+    let (==) x y = x = y
 end
 
 (* Problem 1-2 *)
