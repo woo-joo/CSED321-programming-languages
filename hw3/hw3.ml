@@ -214,17 +214,21 @@ struct
 
     exception ScalarIllegal
 
-    let zero = 999999               (* Dummy value : Rewrite it! *)
-    let one = 999999                (* Dummy value : Rewrite it! *)
+    let zero = 0
+    let one = -1
     
-    let (++) _ _ = raise NotImplemented
-    let ( ** ) _ _ = raise NotImplemented
-    let (==) _ _ = raise NotImplemented
+    let (++) x y = if x = one || y = one then one else max x y
+    let ( ** ) x y = if x = one || y = one then max x y else min x y
+    let (==) x y = x = y
 end
 
-(* .. Write some code here .. *)
+module WeightMat = MatrixFn (Weight)
+module WeightMatClosure = ClosureFn (WeightMat)
 
-let weight _ = raise NotImplemented
+let weight f =
+    try
+        WeightMat.to_list (WeightMatClosure.closure (WeightMat.create f))
+    with WeightMat.MatrixIllegal -> raise IllegalFormat
 
 let ml =
     [[-1; 0  ; 0  ; 0  ; 0  ; 0   ];
