@@ -147,7 +147,10 @@ end
 module BoolMat = MatrixFn (Boolean)
 module BoolMatClosure = ClosureFn (BoolMat)
 
-let reach _ = raise NotImplemented
+let reach m =
+    try
+        BoolMat.to_list (BoolMatClosure.closure (BoolMat.create m))
+    with BoolMat.MatrixIllegal -> raise IllegalFormat
 
 let al = 
     [[true;  false; false; false; false; false];
