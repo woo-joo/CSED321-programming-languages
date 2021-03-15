@@ -57,19 +57,19 @@ struct
     let nth v n =
         try
             List.nth v n
-        with Failure n | Invalid_argument n -> raise VectorIllegal
+        with Failure _ | Invalid_argument _ -> raise VectorIllegal
     let (++) v1 v2 =
         try
             List.map2 (fun e1 e2 -> Scal.(++) e1 e2) v1 v2
-        with Invalid_argument n -> raise VectorIllegal
+        with Invalid_argument _ -> raise VectorIllegal
     let (==) v1 v2 =
         try
             List.for_all2 (fun e1 e2 -> Scal.(==) e1 e2) v1 v2
-        with Invalid_argument n -> raise VectorIllegal
+        with Invalid_argument _ -> raise VectorIllegal
     let innerp v1 v2 =
         try
             List.fold_left2 (fun acc e1 e2 -> Scal.(++) acc (Scal.( ** ) e1 e2)) Scal.zero v1 v2
-        with Invalid_argument n -> raise VectorIllegal
+        with Invalid_argument _ -> raise VectorIllegal
 end
 
 (* Problem 1-3 *)
@@ -78,21 +78,48 @@ end
 module MatrixFn (Scal : SCALAR) : MATRIX with type elem = Scal.t
 =
 struct
+    module Vec = VectorFn(Scal)
+
     type elem = Scal.t
-    type t = unit
+    type t = Vec.t list
 
     exception MatrixIllegal
 
-    let create _ = raise NotImplemented
-    let identity _ = raise NotImplemented
-    let dim _ = raise NotImplemented
-    let transpose _ = raise NotImplemented
-    let to_list _ = raise NotImplemented
-    let get _ _ _ = raise NotImplemented 
+    let create l =
+        match l with
+        | [] -> raise MatrixIllegal
+        | _ -> List.map (fun l_ -> if List.length l_ = List.length l then Vec.create l_ else raise MatrixIllegal) l
+    let identity d =
+        if d <= 0
+        then raise MatrixIllegal
+        else List.init d (fun i -> Vec.create (List.init d (fun i_ -> if i = i_ then Scal.one else Scal.zero)))
+    let dim m = List.length m
+    let transpose m =
+        let d = dim m in
+        List.init d (fun i -> Vec.create (List.init d (fun i_ -> Vec.nth (List.nth m i_) i)))
+    let to_list m =
+        let rec to_list_aux m acc =
+            match m with
+            | [] -> acc
+            | h :: t -> to_list_aux t (acc @ [Vec.to_list h])
+        in to_list_aux m []
+    let get m r c =
+        try
+            Vec.nth (List.nth m r) c
+        with Failure _ | Invalid_argument _ | Vec.VectorIllegal -> raise MatrixIllegal
 
-    let (++) _ _ = raise NotImplemented
-    let ( ** ) _ _ = raise NotImplemented
-    let (==) _ _ = raise NotImplemented
+    let (++) m1 m2 =
+        try
+            List.map2 (fun v1 v2 -> Vec.(++) v1 v2) m1 m2
+        with Invalid_argument _ | Vec.VectorIllegal -> raise MatrixIllegal
+    let ( ** ) m1 m2 =
+        try
+            List.map (fun v1 -> Vec.create (List.map (fun v2 -> Vec.innerp v1 v2) (transpose m2))) m1
+        with Invalid_argument _ | Vec.VectorIllegal -> raise MatrixIllegal
+    let (==) m1 m2 =
+        try
+            List.for_all2 (fun v1 v2 -> Vec.(==) v1 v2) m1 m2
+        with Invalid_argument _ | Vec.VectorIllegal -> raise MatrixIllegal
 end
 
 (* Problem 2-1 *)
