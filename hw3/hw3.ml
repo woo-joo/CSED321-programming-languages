@@ -85,6 +85,13 @@ struct
 
     exception MatrixIllegal
 
+    let init n f =
+        let rec init_aux n f acc =
+            match n with
+            | 0 -> acc
+            | _ -> init_aux (n - 1) f (f (n - 1) :: acc)
+        in init_aux n f []
+
     let create l =
         match l with
         | [] -> raise MatrixIllegal
@@ -92,11 +99,9 @@ struct
     let identity d =
         if d <= 0
         then raise MatrixIllegal
-        else List.init d (fun i -> Vec.create (List.init d (fun i_ -> if i = i_ then Scal.one else Scal.zero)))
+        else init d (fun i -> Vec.create (init d (fun i_ -> if i = i_ then Scal.one else Scal.zero)))
     let dim m = List.length m
-    let transpose m =
-        let d = dim m in
-        List.init d (fun i -> Vec.create (List.init d (fun i_ -> Vec.nth (List.nth m i_) i)))
+    let transpose m = init (dim m) (fun i -> Vec.create (init (dim m) (fun i_ -> Vec.nth (List.nth m i_) i)))
     let to_list m =
         let rec to_list_aux m acc =
             match m with
