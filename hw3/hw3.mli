@@ -4,9 +4,9 @@ exception NotImplemented
 
 exception IllegalFormat 
 
-module Integer : SCALAR
+module Integer : SCALAR with type t = int
 
-module Boolean : SCALAR
+module Boolean : SCALAR with type t = bool
 
 module VectorFn (Scal : SCALAR) : VECTOR with type elem = Scal.t
 
