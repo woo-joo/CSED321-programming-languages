@@ -44,6 +44,21 @@ let rec swap x y e =
     | App (e1, e2) -> App (swap x y e1, swap x y e2)
 
 (*
+ * substitute expression e' for every occurrence of variable x in expression e : exp -> var -> exp -> exp
+ *)
+let rec substitute e' x e =
+    match e with
+    | Var v -> if x = v then e' else e
+    | Lam (v, e1) ->
+        if x = v then e
+        else if not (List.mem x (getFV e)) then e
+        else if not (List.mem v (getFV e')) then Lam (v, substitute e' x e1)
+        else
+            let v' = getFreshVariable v
+            in Lam (v', substitute e' x (swap v v' e1))
+    | App (e1, e2) -> App (substitute e' x e1, substitute e' x e2)
+
+(*
  * implement a single step with reduction using the call-by-value strategy.
  *)
 let rec stepv e = raise NotImplemented
