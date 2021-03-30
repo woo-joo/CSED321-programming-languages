@@ -26,13 +26,22 @@ let rec union s1 s2 =
     | h :: t -> union t (h :: List.filter (fun x -> x <> h) s2)
 
 (*
- * get a set of fresh variables from e : exp -> var list
+ * get a set of fresh variables from expression e : exp -> var list
  *)
 let rec getFV e =
     match e with
     | Var v -> [v]
     | Lam (v, e1) -> List.filter (fun s -> s <> v) (getFV e1)
     | App (e1, e2) -> union (getFV e1) (getFV e2)
+
+(*
+ * swap variables x and y in expression e : var -> var -> exp -> exp
+ *)
+let rec swap x y e =
+    match e with
+    | Var v -> if x = v then Var y else if y = v then Var x else Var v
+    | Lam (v, e1) -> Lam ((if x = v then y else if y = v then x else v), swap x y e1)
+    | App (e1, e2) -> App (swap x y e1, swap x y e2)
 
 (*
  * implement a single step with reduction using the call-by-value strategy.
