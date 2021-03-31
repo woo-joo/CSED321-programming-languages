@@ -70,7 +70,11 @@ let rec stepv e =
 (*
  * implement a single step with reduction using the call-by-name strategy.
  *)
-let rec stepn e = raise NotImplemented
+let rec stepn e =
+    match e with
+    | App (Lam (v, e1), e2) -> substitute e2 v e1
+    | App (e1, e2) -> App (stepn e1, e2)
+    | _ -> raise Stuck
 
 let stepOpt stepf e = try Some (stepf e) with Stuck -> None
 
