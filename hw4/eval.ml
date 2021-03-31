@@ -51,7 +51,6 @@ let rec substitute e' x e =
     | Var v -> if x = v then e' else e
     | Lam (v, e1) ->
         if x = v then e
-        else if not (List.mem x (getFV e)) then e
         else if not (List.mem v (getFV e')) then Lam (v, substitute e' x e1)
         else
             let v' = getFreshVariable v
@@ -61,7 +60,12 @@ let rec substitute e' x e =
 (*
  * implement a single step with reduction using the call-by-value strategy.
  *)
-let rec stepv e = raise NotImplemented
+let rec stepv e =
+    match e with
+    | App (Lam (v1, e1), Lam (v2, e2)) -> substitute (Lam (v2, e2)) v1 e1
+    | App (Lam (v, e1), e2) -> App ((Lam (v, e1)), stepv e2)
+    | App (e1, e2) -> App (stepv e1, e2)
+    | _ -> raise Stuck
 
 (*
  * implement a single step with reduction using the call-by-name strategy.
