@@ -5,14 +5,14 @@ exception TypeError
 (***************************************************** 
  * replace unit by your own type for typing contexts *
  *****************************************************)
-type context = unit
+type context = var -> tp
 
 (*
  * For each function you introduce, 
  * write its type, specification, and invariant. 
  *)
 
-let createEmptyContext () = raise TypeError 
+let createEmptyContext () = fun _ -> raise TypeError
 
 (* val typing : context -> Tml.exp -> Tml.tp *)
 let typing cxt e = raise TypeError
