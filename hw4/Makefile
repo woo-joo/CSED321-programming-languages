@@ -8,16 +8,14 @@ YACCFLAGS=-v
 CAMLLEX=ocamllex
 
 PARSER = parser.ml parser.mli lexer.ml
-TARGET = hw4v hw4n
-OBJ = uml.cmo parser.cmo lexer.cmo inout.cmo eval.cmo loop.cmo
+TARGET = hw4test
+OBJ = uml.cmo parser.cmo lexer.cmo inout.cmo eval.cmo evalsol.cmo loop.cmo evaltest.cmo
 
-all: $(OBJ) hw4v.cmo hw4n.cmo
-	$(CAMLC) -o lib.cma -a $(OBJ)
-	$(CAMLC) -o hw4v lib.cma hw4v.cmo 
-	$(CAMLC) -o hw4n lib.cma hw4n.cmo 
+all: $(OBJ)
+	$(CAMLC) -thread -o $(TARGET) unix.cma threads.cma $(OBJ) 
 
 clean:
-	rm -f $(TARGET) $(PARSER) *.annot *.aux *.log *.cm[ioxa] *.dvi *~ .*~ #*# 
+	rm -f $(TARGET) $(PARSER) *.annot *.aux *.log *.cm[iox] *.dvi *~ .*~ #*# 
 
 .SUFFIXES : .ml .mli .cmo .cmi .cmx .mll .mly 
 
@@ -48,7 +46,7 @@ clean:
 	$(CAMLLEX) $<
 .mly.ml:
 	$(CAMLYACC) $<
-	
+
 depend: 
 	$(CAMLDEP) *.mli *.ml > .depend 
 
