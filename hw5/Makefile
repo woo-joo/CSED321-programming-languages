@@ -8,13 +8,11 @@ YACCFLAGS=-v
 CAMLLEX=ocamllex
 
 PARSER = parser.ml parser.mli lexer.ml
-TARGET = hw5
-LIB = lib.cma
-OBJ = tml.cmo parser.cmo lexer.cmo typing.cmo inout.cmo eval.cmo loop.cmo
+TARGET = hw5test
+OBJ = tml.cmo parser.cmo lexer.cmo typing.cmo typingsol.cmo inout.cmo eval.cmo loop.cmo typingtest.cmo
 
-all: $(OBJ) hw5.cmo
-	$(CAMLC) -o lib.cma -a $(OBJ)
-	$(CAMLC) -o $(TARGET) lib.cma hw5.cmo 
+all: $(OBJ)
+	$(CAMLC) -thread -o $(TARGET) unix.cma threads.cma $(OBJ)
 
 clean:
 	rm -f $(TARGET) $(PARSER) $(LIB) *.annot *.aux *.log *.cm[iox] *.dvi *~ .*~ #*# 
