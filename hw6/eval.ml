@@ -28,9 +28,52 @@ let emptyEnv = NOT_IMPLEMENT_ENV
  *           you wiil receive no credit for the entire third part!  *)
 let value2exp _ = raise NotImplemented
 
+(* Return the index of x in l.
+ * If there is no x in l, raise Stuck.
+ * memi : a' -> a' list -> int *)
+let rec memi x l =
+	match l with
+	| [] -> raise Stuck
+	| h :: t -> if x = h then 0 else (memi x t) + 1
+
 (* Problem 1. 
  * texp2exp : Tml.texp -> Tml.exp *)
-let texp2exp _ = raise NotImplemented
+let texp2exp te =
+	let rec texp2exp_aux n te =
+		match te with
+		| Tvar x -> let n_ = if List.mem x n then n else n @ [x] in (n_, Ind (memi x n_))
+		| Tlam (x, _, te) -> let n, e = texp2exp_aux (x :: n) te in (List.tl n, Lam e)
+		| Tapp (te1, te2) ->
+			let n2, e2 = texp2exp_aux n te2 in
+			let n1, e1 = texp2exp_aux n2 te1 in
+			(n1, App (e1, e2))
+		| Tpair (te1, te2) ->
+			let n2, e2 = texp2exp_aux n te2 in
+			let n1, e1 = texp2exp_aux n2 te1 in
+			(n1, Pair (e1, e2))
+		| Tfst te -> let n, e = texp2exp_aux n te in (n, Fst e)
+		| Tsnd te -> let n, e = texp2exp_aux n te in (n, Snd e)
+		| Teunit -> (n, Eunit)
+		| Tinl (te, _) -> let n, e = texp2exp_aux n te in (n, Inl e)
+		| Tinr (te, _) -> let n, e = texp2exp_aux n te in (n, Inr e)
+		| Tcase (te, x1, te1, x2, te2) ->
+			let n2, e2 = texp2exp_aux (x2 :: n) te2 in
+			let n1, e1 = texp2exp_aux (x1 :: List.tl n2) te1 in
+			let n, e = texp2exp_aux (List.tl n1) te in
+			(n, Case (e, e1, e2))
+		| Tfix (x, _, te) -> let n, e = texp2exp_aux (x :: n) te in (List.tl n, Fix e)
+		| Ttrue -> (n, True)
+		| Tfalse -> (n, False)
+		| Tifthenelse (te, te1, te2) ->
+			let n2, e2 = texp2exp_aux n te2 in
+			let n1, e1 = texp2exp_aux n2 te1 in
+			let n, e = texp2exp_aux n1 te in
+			(n, Ifthenelse (e, e1, e2))
+		| Tnum i -> (n, Num i)
+		| Tplus -> (n, Plus)
+		| Tminus -> (n, Minus)
+		| Teq -> (n, Eq)
+	in let _, e = texp2exp_aux [] te in e 
 
 (* Problem 2. 
  * step1 : Tml.exp -> Tml.exp *)   
