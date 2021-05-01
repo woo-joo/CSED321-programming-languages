@@ -75,9 +75,78 @@ let texp2exp te =
 		| Teq -> (n, Eq)
 	in let _, e = texp2exp_aux [] te in e 
 
+(* Return true if exp is value.
+ * is_value : Tml.exp -> bool *)
+let rec is_value e =
+	match e with
+	| Ind _ | Lam _ | Eunit | True | False | Num _ | Plus | Minus | Eq -> true
+	| Pair (e1, e2) -> (is_value e1) && (is_value e2)
+	| Inl e | Inr e -> is_value e
+	| _ -> false
+
+(* Shift free variables.
+ * shift Tml.index -> Tml.index -> Tml. exp -> Tml.exp *)
+let rec shift m n e =
+	match e with
+	| Ind i -> if i < n then Ind i else Ind (i + m)
+	| Lam e -> Lam (shift m (n + 1) e)
+	| App (e1, e2) -> App (shift m n e1, shift m n e2)
+	| Pair (e1, e2) -> Pair (shift m n e1, shift m n e2)
+	| Fst e -> Fst (shift m n e)
+	| Snd e -> Snd (shift m n e)
+	| Inl e -> Inl (shift m n e)
+	| Inr e -> Inr (shift m n e)
+	| Case (e, e1, e2) -> Case (shift m n e, shift m (n + 1) e1, shift m (n + 1) e2)
+	| Fix e -> Fix (shift m (n + 1) e)
+	| Ifthenelse (e, e1, e2) -> Ifthenelse (shift m n e, shift m n e1, shift m n e2)
+	| _ -> e
+
+(* Substitute e' for every occurrence of i in e.
+ * substitute : Tml.exp -> Tml.index -> Tml.exp -> Tml.exp *)
+let rec substitute e' m e =
+	match e with
+	| Ind i -> if i < m then Ind i else if i > m then Ind (i - 1) else shift m 0 e'
+	| Lam e -> Lam (substitute e' (m + 1) e)
+	| App (e1, e2) -> App (substitute e' m e1, substitute e' m e2)
+	| Pair (e1, e2) -> Pair (substitute e' m e1, substitute e' m e2)
+	| Fst e -> Fst (substitute e' m e)
+	| Snd e -> Snd (substitute e' m e)
+	| Inl e -> Inl (substitute e' m e)
+	| Inr e -> Inr (substitute e' m e)
+	| Case (e, e1, e2) -> Case (substitute e' m e, substitute e' (m + 1) e1, substitute e' (m + 1) e2)
+	| Fix e -> Fix (substitute e' (m + 1) e)
+	| Ifthenelse (e, e1, e2) -> Ifthenelse (substitute e' m e, substitute e' m e1, substitute e' m e2)
+	| _ -> e
+
 (* Problem 2. 
  * step1 : Tml.exp -> Tml.exp *)   
-let rec step1 _ = raise NotImplemented
+let rec step1 e =
+	match e with
+	| App (e1, e2) ->
+		(match e1 with
+		| Lam e1 -> if is_value e2 then substitute e2 0 e1 else App (Lam e1, step1 e2)
+		| Plus -> (match e2 with Pair (Num i1, Num i2) -> Num (i1 + i2) | _ -> App (Plus, step1 e2))
+		| Minus -> (match e2 with Pair (Num i1, Num i2) -> Num (i1 - i2) | _ -> App (Minus, step1 e2))
+		| Eq -> (match e2 with Pair (Num i1, Num i2) -> if i1 = i2 then True else False | _ -> App (Eq, step1 e2))
+		| _ -> App (step1 e1, e2))
+	| Pair (e1, e2) -> if is_value e1 then Pair (e1, step1 e2) else Pair (step1 e1, e2)
+	| Fst e -> if is_value e then match e with Pair (e1, _) -> e1 | _ -> raise Stuck else Fst (step1 e)
+	| Snd e -> if is_value e then match e with Pair (_, e2) -> e2 | _ -> raise Stuck else Snd (step1 e)
+	| Inl e -> Inl (step1 e)
+	| Inr e -> Inr (step1 e)
+	| Case (e, e1, e2) ->
+		if is_value e then
+		match e with
+		| Inl e -> substitute e 0 e1
+		| Inr e -> substitute e 0 e2
+		| _ -> raise Stuck
+		else Case (step1 e, e1, e2)
+	| Fix e -> substitute (Fix e) 0 e
+	| Ifthenelse (e, e1, e2) ->
+		if is_value e then
+		match e with True -> e1 | False -> e2 | _ -> raise Stuck
+		else Ifthenelse (step1 e, e1, e2)
+	| _ -> raise Stuck
 
 (* Problem 3. 
  * step2 : state -> state *)
