@@ -16,17 +16,51 @@ type stoval =
 	| Return_ST of (stoval Heap.heap) * stack * value 
 
  (* Define your own datatypes *)
- and env = NOT_IMPLEMENT_ENV
- and value = NOT_IMPLEMENT_VALUE
- and frame = NOT_IMPLEMENT_FRAME
+ and env = Heap.loc list
+
+ and value =
+	| Lam_VAL of exp * env
+	| Pair_VAL of exp * exp * env
+	| Eunit_VAL
+	| Inl_VAL of exp * env
+	| Inr_VAL of exp * env
+	| True_VAL
+	| False_VAL
+	| Num_VAL of int
+	| Plus_VAL
+	| Minus_VAL
+	| Eq_VAL
+
+ and frame =
+	| App_FR of exp * env
+	| Fst_FR
+	| Snd_FR
+	| Case_FR of exp * exp * env
+	| Ifthenelse_FR of exp * exp * env
+	| Plus_FR
+	| Plus_Fst_FR of exp * env
+	| Plus_Snd_FR of value
+	| Minus_FR
+	| Minus_Fst_FR of exp * env
+	| Minus_Snd_FR of value
+	| Eq_FR
+	| Eq_Fst_FR of exp * env
+	| Eq_Snd_FR of value
+	| Loc_FR of Heap.loc
 
 (* Define your own empty environment *)
-let emptyEnv = NOT_IMPLEMENT_ENV
+let emptyEnv = []
 
 (* Implement the function value2exp : value -> Tml.exp
  * Warning : If you give wrong implementation of this function,
  *           you wiil receive no credit for the entire third part!  *)
-let value2exp _ = raise NotImplemented
+let value2exp v =
+	match v with
+	| Eunit_VAL -> Eunit
+	| True_VAL -> True
+	| False_VAL -> False
+	| Num_VAL i -> Num i
+	| _ -> raise NotConvertible
 
 (* Return the index of x in l.
  * If there is no x in l, raise Stuck.
@@ -150,7 +184,58 @@ let rec step1 e =
 
 (* Problem 3. 
  * step2 : state -> state *)
-let step2 _ = raise NotImplemented
+let step2 s =
+	match s with
+	| Anal_ST (h, sk, e, en) ->
+		(match e with
+		| Ind i ->
+			let l = List.nth en i in
+			(match Heap.deref h l with
+			| Computed v -> Return_ST (h, sk, v)
+			| Delayed (e, en) -> Anal_ST (h, Frame_SK (sk, Loc_FR l), e, en))
+		| Lam e -> Return_ST (h, sk, Lam_VAL (e, en))
+		| App (e1, e2) -> Anal_ST (h, Frame_SK (sk, App_FR (e2, en)), e1, en)
+		| Pair (e1, e2) -> Return_ST (h, sk, Pair_VAL (e1, e2, en))
+		| Fst e -> Anal_ST (h, Frame_SK (sk, Fst_FR), e, en)
+		| Snd e -> Anal_ST (h, Frame_SK (sk, Snd_FR), e, en)
+		| Eunit -> Return_ST (h, sk, Eunit_VAL)
+		| Inl e -> Return_ST (h, sk, Inl_VAL (e, en))
+		| Inr e -> Return_ST (h, sk, Inr_VAL (e, en))
+		| Case (e, e1, e2) -> Anal_ST (h, Frame_SK (sk, Case_FR (e1, e2, en)), e, en)
+		| Fix e -> let h, l = Heap.allocate h (Delayed (Fix e, en)) in Anal_ST (h, sk, e, l :: en)
+		| True -> Return_ST (h, sk, True_VAL)
+		| False -> Return_ST (h, sk, False_VAL)
+		| Ifthenelse (e, e1, e2) -> Anal_ST (h, Frame_SK (sk, Ifthenelse_FR (e1, e2, en)), e, en)
+		| Num i -> Return_ST (h, sk, Num_VAL i)
+		| Plus -> Return_ST (h, sk, Plus_VAL)
+		| Minus -> Return_ST (h, sk, Minus_VAL)
+		| Eq -> Return_ST (h, sk, Eq_VAL))
+	| Return_ST (h, sk, v) ->
+		(match sk with
+		| Hole_SK -> raise Stuck
+		| Frame_SK (sk, fr) ->
+			(match fr, v with
+			| App_FR (e, en), Lam_VAL (e_, en_) -> let h, l = Heap.allocate h (Delayed (e, en)) in Anal_ST (h, sk, e_, l :: en_)
+			| App_FR (e, en), Plus_VAL -> Anal_ST (h, Frame_SK(sk, Plus_FR), e, en)
+			| App_FR (e, en), Minus_VAL -> Anal_ST (h, Frame_SK(sk, Minus_FR), e, en)
+			| App_FR (e, en), Eq_VAL -> Anal_ST (h, Frame_SK(sk, Eq_FR), e, en)
+			| Fst_FR, Pair_VAL (e1, e2, en) -> Anal_ST (h, sk, e1, en)
+			| Snd_FR, Pair_VAL (e1, e2, en) -> Anal_ST (h, sk, e2, en)
+			| Case_FR (e1, e2, en), Inl_VAL (e, en_) -> let h, l = Heap.allocate h (Delayed (e, en_)) in Anal_ST (h, sk, e1, l :: en)
+			| Case_FR (e1, e2, en), Inr_VAL (e, en_) -> let h, l = Heap.allocate h (Delayed (e, en_)) in Anal_ST (h, sk, e2, l :: en)
+			| Ifthenelse_FR (e1, e2, en), True_VAL -> Anal_ST (h, sk, e1, en)
+			| Ifthenelse_FR (e1, e2, en), False_VAL -> Anal_ST (h, sk, e2, en)
+			| Plus_FR, Pair_VAL (e1, e2, en) -> Anal_ST (h, Frame_SK (sk, Plus_Fst_FR(e2, en)), e1, en)
+			| Plus_Fst_FR (e, en), Num_VAL i -> Anal_ST (h, Frame_SK (sk, Plus_Snd_FR v), e, en)
+			| Plus_Snd_FR (Num_VAL i), Num_VAL i_ -> Return_ST (h, sk, Num_VAL (i + i_))
+			| Minus_FR, Pair_VAL (e1, e2, en) -> Anal_ST (h, Frame_SK (sk, Minus_Fst_FR(e2, en)), e1, en)
+			| Minus_Fst_FR (e, en), Num_VAL i -> Anal_ST (h, Frame_SK (sk, Minus_Snd_FR v), e, en)
+			| Minus_Snd_FR (Num_VAL i), Num_VAL i_ -> Return_ST (h, sk, Num_VAL (i - i_))
+			| Eq_FR, Pair_VAL (e1, e2, en) -> Anal_ST (h, Frame_SK (sk, Eq_Fst_FR(e2, en)), e1, en)
+			| Eq_Fst_FR (e, en), Num_VAL i -> Anal_ST (h, Frame_SK (sk, Eq_Snd_FR v), e, en)
+			| Eq_Snd_FR (Num_VAL i), Num_VAL i_ -> let v = if i = i_ then True_VAL else False_VAL in Return_ST (h, sk, v)
+			| Loc_FR l, _ -> Return_ST (Heap.update h l (Computed v), sk, v)
+			| _ -> raise Stuck))
                     
 (* exp2string : Tml.exp -> string *)
 let rec exp2string exp = 
