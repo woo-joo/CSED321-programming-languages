@@ -1,0 +1,20 @@
+eval.cmi : tml.cmo heap.cmo
+parser.cmi : tml.cmo
+eval.cmo : tml.cmo heap.cmo eval.cmi
+eval.cmx : tml.cmx heap.cmx eval.cmi
+evalsol.cmo : tml.cmo heap.cmo
+evalsol.cmx : tml.cmx heap.cmx
+evaltest.cmo : tml.cmo loop.cmo heap.cmo evalsol.cmo eval.cmi
+evaltest.cmx : tml.cmx loop.cmx heap.cmx evalsol.cmx eval.cmx
+heap.cmo :
+heap.cmx :
+inout.cmo : tml.cmo parser.cmi lexer.cmo
+inout.cmx : tml.cmx parser.cmx lexer.cmx
+lexer.cmo : parser.cmi
+lexer.cmx : parser.cmx
+loop.cmo : tml.cmo inout.cmo heap.cmo eval.cmi
+loop.cmx : tml.cmx inout.cmx heap.cmx eval.cmx
+parser.cmo : tml.cmo parser.cmi
+parser.cmx : tml.cmx parser.cmi
+tml.cmo :
+tml.cmx :
