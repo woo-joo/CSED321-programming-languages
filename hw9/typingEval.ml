@@ -21,6 +21,17 @@ let rec field ct c =
         in fs @ field ct d
     with Not_found -> []
 
+(* Return type of m in c specified by ct.
+ * mtype : Fjava.classDecl list -> string -> Fjava.typ -> Fjava.typ list * Fjava.typ *)
+let rec mtype ct m c =
+    try
+        let c, d, _, _, ms = List.find (fun (c', _, _, _, _) -> c' = c) ct in
+        try
+            let c0, m, p, _ = List.find (fun (_, m', _, _) -> m' = m) ms in
+            (List.map (fun (x, _) -> x) p), c0
+        with Not_found -> mtype ct m d
+    with Not_found -> raise TypeError
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
