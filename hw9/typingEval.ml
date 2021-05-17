@@ -32,6 +32,12 @@ let rec mtype ct m c =
         with Not_found -> mtype ct m d
     with Not_found -> raise TypeError
 
+(* Return true if m is overridden well from d.
+ * override : Fjava.classDecl list -> string -> Fjava.typ -> Fjava.typ list -> Fjava.typ -> bool *)
+let override ct m d cs c0 =
+    let ds, d0 = try mtype ct m d with TypeError -> cs, c0
+    in try List.for_all2 (fun x1 x2 -> x1 = x2) (c0 :: cs) (d0 :: ds) with Invalid_argument _ -> raise TypeError
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
