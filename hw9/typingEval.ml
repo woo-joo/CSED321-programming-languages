@@ -4,6 +4,15 @@ exception NotImplemented
 exception TypeError
 exception Stuck
 
+(* Return list of supertypes of c specified by ct.
+ * supertype : Fjava.classDecl list -> Fjava.typ -> Fjava.typ list *)
+let rec supertype ct c =
+    c ::
+    try
+        let c, d, _, _, _ = List.find (fun (c', _, _, _, _) -> c' = c) ct
+        in supertype ct d
+    with Not_found -> []
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
