@@ -63,6 +63,20 @@ let rec typeOf2 ct cxt e =
         if (List.mem t (supertype ct d)) || (List.mem d (supertype ct t)) then t
         else let _ = Printf.printf "Stupid Warning\n" in t
 
+(* Return true if k (constructor declaration) is okay.
+ * checkConstructor : Fjava.classDecl list -> Fjava.typ -> Fjava.typ -> (Fjava.typ * string) list -> Fjava.constructorDecl -> bool *)
+let checkConstructor ct c d fs k =
+    let c', p, s, a = k in
+    let fieldD = field ct d in
+    let checkName = c = c' in
+    let checkLength = List.length fieldD = List.length s && List.length fs = List.length a in
+    let checkParameters = try List.for_all2 (fun x1 x2 -> x1 = x2) p (fieldD @ fs) with Invalid_argument _ -> false in
+    let getSnd l = List.map (fun (_, x) -> x) l in
+    let checkAssignments = List.for_all (fun (x1, x2) -> x1 = x2) a in
+    let checkBody = List.for_all (fun (x1, x2) -> x1 = x2) a &&
+                    (try List.for_all2 (fun x1 x2 -> x1 = x2) (getSnd p) (s @ (getSnd a)) with Invalid_argument _ -> false) in
+    checkName && checkLength && checkParameters && checkAssignments && checkBody
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
