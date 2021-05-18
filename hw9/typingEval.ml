@@ -88,7 +88,13 @@ let rec checkMethods ct c d ms =
         (override ct m d (List.map (fun (x, y) -> x) p) c0) &&
         (checkMethods ct c d t)
 
-let typeOf p = raise NotImplemented
+(* Return type of p.
+ * Raise TypeError if some class declaration is not okay or expression has no type.
+ * typeOf : Fjava.program -> Fjava.typ *)
+let typeOf p =
+    let ct, e = p in
+    let checkClasses = List.for_all (fun (c, d, fs, k, ms) -> (checkConstructor ct c d fs k) && (checkMethods ct c d ms)) ct in
+    if checkClasses then typeOf2 ct [] e else raise TypeError
 
 let step p = raise NotImplemented
 
