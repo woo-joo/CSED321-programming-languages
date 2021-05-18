@@ -77,6 +77,17 @@ let checkConstructor ct c d fs k =
                     (try List.for_all2 (fun x1 x2 -> x1 = x2) (getSnd p) (s @ (getSnd a)) with Invalid_argument _ -> false) in
     checkName && checkLength && checkParameters && checkAssignments && checkBody
 
+(* Return true if all method declarations in ms is okay.
+ * checkMethods : Fjava.classDecl list -> Fjava.type -> Fjava.typ -> Fjava.methodDecl list -> bool *)
+let rec checkMethods ct c d ms =
+    match ms with
+    | [] -> true
+    | (c0, m, p, b) :: t ->
+        let e = typeOf2 ct (("this", c) :: List.map (fun (x1, x2) -> (x2, x1)) p) b in
+        (List.mem c0 (supertype ct e)) &&
+        (override ct m d (List.map (fun (x, y) -> x) p) c0) &&
+        (checkMethods ct c d t)
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
