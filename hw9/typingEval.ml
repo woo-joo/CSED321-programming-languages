@@ -38,6 +38,31 @@ let override ct m d cs c0 =
     let ds, d0 = try mtype ct m d with TypeError -> cs, c0
     in try List.for_all2 (fun x1 x2 -> x1 = x2) (c0 :: cs) (d0 :: ds) with Invalid_argument _ -> raise TypeError
 
+(* Return type of e.
+ * Raise TypeError if e has no type.
+ * typeOf2 : Fjava.classDecl list -> (string * Fjava.typ) list -> Fjava.exp -> Fjava.typ *)
+let rec typeOf2 ct cxt e =
+    match e with
+    | Var v -> (try List.assoc v cxt with Not_found -> raise TypeError)
+    | Field (e, f) ->
+        let c0 = typeOf2 ct cxt e in
+        let c, _ = try List.find (fun (_, f') -> f' = f) (field ct c0) with Not_found -> raise TypeError in
+        c
+    | Method (e, m, es) ->
+        let c0 = typeOf2 ct cxt e in
+        let ds, c = mtype ct m c0 in
+        if (try List.for_all2 (fun e' d -> List.mem d (supertype ct (typeOf2 ct cxt e'))) es ds
+            with Invalid_argument _ -> raise TypeError)
+        then c else raise TypeError
+    | New (t, es) ->
+        if (try List.for_all2 (fun e (d, _) -> List.mem d (supertype ct (typeOf2 ct cxt e))) es (field ct t)
+            with Invalid_argument _ -> raise TypeError)
+        then t else raise TypeError
+    | Cast (t, e) ->
+        let d = typeOf2 ct cxt e in
+        if (List.mem t (supertype ct d)) || (List.mem d (supertype ct t)) then t
+        else let _ = Printf.printf "Stupid Warning\n" in t
+
 let typeOf p = raise NotImplemented
 
 let step p = raise NotImplemented
