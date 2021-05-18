@@ -117,7 +117,53 @@ let rec mbody ct m c =
         with Not_found -> mbody ct m d
     with Not_found -> raise Stuck
 
-let step p = raise NotImplemented
+(* Reduce p by one step.
+ * Raise Stuck if p is not reducible.
+ * step : Fjava.program -> Fjava.program *)
+let step p =
+    let ct, e = p
+    in let rec findi x l =
+        match l with
+        | [] -> raise Stuck
+        | h :: t -> if x = h then 0 else (findi x t) + 1
+    in let rec is_reducible e =
+        match e with
+        | Var v -> false
+        | New (t, es) -> List.exists (fun x -> is_reducible x) es
+        | _ -> true
+    in let rec reduciblei es =
+        match es with
+        | [] -> raise Stuck
+        | h :: t -> if is_reducible h then 0 else (reduciblei t) + 1
+    in let rec step_aux e =
+        match e with
+        | Var v -> raise Stuck
+        | Field (New (t, es), f) ->
+            (try Field (step_aux (New (t, es)), f)
+            with Stuck ->
+                let fs = List.map (fun (_, x) -> x) (field ct t)
+                in List.nth es (findi f fs))
+        | Field (e, f) -> Field (step_aux e, f)
+        | Method (New (t, es), m, es') ->
+            (try Method (step_aux (New (t, es)), m, es')
+            with Stuck ->
+                (try
+                    let i = reduciblei es' in
+                    Method (New (t, es), m, List.mapi (fun i' e' -> if i' = i then step_aux e' else e') es')
+                with Stuck ->
+                    let xs, e0 = mbody ct m t
+                    in substitute (("this", New (t, es)) :: try List.combine xs es' with Invalid_argument _ -> raise Stuck) e0))
+        | Method (e, m, es) -> Method (step_aux e, m, es)
+        | New (t, es) ->
+            let i = reduciblei es
+            in New (t, List.mapi (fun i' e' -> if i' = i then step_aux e' else e') es)
+        | Cast (t, New (t', es)) ->
+            (try Cast (t, step_aux (New (t', es)))
+            with Stuck ->
+                if List.mem t (supertype ct t')
+                then New (t', es) else raise Stuck)
+        | Cast (t, e) -> Cast (t, step_aux e)
+    in ct, step_aux e
 
 let typeOpt p = try Some (typeOf p) with TypeError -> None
 let stepOpt p = try Some (step p) with Stuck -> None
