@@ -96,6 +96,16 @@ let typeOf p =
     let checkClasses = List.for_all (fun (c, d, fs, k, ms) -> (checkConstructor ct c d fs k) && (checkMethods ct c d ms)) ct in
     if checkClasses then typeOf2 ct [] e else raise TypeError
 
+(* Substitute parameters and this in e.
+ * substitute : (string * Fjava.exp) list -> Fjava.exp *)
+let rec substitute cxt e =
+    match e with
+    | Var v -> (try List.assoc v cxt with Not_found -> raise Stuck)
+    | Field (e, f) -> Field (substitute cxt e, f)
+    | Method (e, m, es) -> Method (substitute cxt e, m, List.map (fun e' -> substitute cxt e') es)
+    | New (t, es) -> New (t, List.map (fun e' -> substitute cxt e') es)
+    | Cast (t, e) -> Cast (t, substitute cxt e)
+
 let step p = raise NotImplemented
 
 let typeOpt p = try Some (typeOf p) with TypeError -> None
