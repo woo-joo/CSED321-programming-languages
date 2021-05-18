@@ -106,6 +106,17 @@ let rec substitute cxt e =
     | New (t, es) -> New (t, List.map (fun e' -> substitute cxt e') es)
     | Cast (t, e) -> Cast (t, substitute cxt e)
 
+(* Return arguments and body of m in c specified by ct.
+ * mbody : Fjava.classDecl list -> string -> Fjava.typ -> string list * Fjava.typ *)
+let rec mbody ct m c =
+    try
+        let c, d, _, _, ms = List.find (fun (c', _, _, _, _) -> c' = c) ct in
+        try
+            let _, m, p, b = List.find (fun (_, m', _, _) -> m' = m) ms in
+            (List.map (fun (_, x) -> x) p), b
+        with Not_found -> mbody ct m d
+    with Not_found -> raise Stuck
+
 let step p = raise NotImplemented
 
 let typeOpt p = try Some (typeOf p) with TypeError -> None
