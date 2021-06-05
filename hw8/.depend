@@ -1,0 +1,22 @@
+ast.cmo :
+ast.cmx :
+ast_print.cmo : ast.cmo
+ast_print.cmx : ast.cmx
+ast_valid.cmo : set_type.cmo ast.cmo
+ast_valid.cmx : set_type.cmx ast.cmx
+core.cmo : ast.cmo
+core.cmx : ast.cmx
+core_print.cmo : core.cmo
+core_print.cmx : core.cmx
+dict.cmo : set_type.cmo
+dict.cmx : set_type.cmx
+hw8.cmo : test.cmo
+hw8.cmx : test.cmx
+inout.cmo :
+inout.cmx :
+set_type.cmo :
+set_type.cmx :
+test.cmo : typing.cmo inout.cmo core_print.cmo ast_valid.cmo ast_print.cmo
+test.cmx : typing.cmx inout.cmx core_print.cmx ast_valid.cmx ast_print.cmx
+typing.cmo :
+typing.cmx :
