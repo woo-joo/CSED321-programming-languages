@@ -1,0 +1,37 @@
+
+(fn x : int => (fn y : int => + (x,y)) 1) 2;
+
+(fn x : (int * int) -> int => x (2,3)) =;
+
+- ((fn x : int * int => x) (10,100));
+
+fst ((fn x : int => - (x,1)) 2 , true); 
+
+snd ( fix x : int => x,()); 
+
+case inl (int) 10 of inl a => + (a, 5) | inr b => - (b, 5); 
+
+(fn x : unit + unit => case x of inl a => true | inr a => false) (inl (unit) ()); 
+
+let or : bool -> bool -> bool = fn x : bool => fn y : bool => if x then true else y in
+let add : int -> int -> int = fn x : int => fn y : int => + (x, y) in
+let sub : int -> int -> int = fn x : int => fn y : int => - (x, y) in
+let rec fib : int -> int = fn x : int => if or (= (x, 0)) (= (x, 1)) then 1 else add (fib (sub x 1)) (fib (sub x 2)) in
+fib 10;
+
+let rec evenOdd : ((int -> bool) * (int -> bool)) = 
+(fn x : int => if (= (x, 0)) then true else ((snd evenOdd) (- (x, 1))), fn x : int => if (= (x, 0)) then false else ((fst evenOdd) (- (x, 1)))) in
+(fst evenOdd) 18; 
+
+let rec sum : int -> int = fn x : int => if (= (x, 1)) then 1 else + (x, sum (- (x, 1))) 
+in (fn x : int => = ((+(-(x,x),x)),x)) (sum 10);
+
+let not : bool -> bool = fn x : bool => if x then false else true in
+let f : (int + bool) -> bool = fn x : (int + bool) => case x of inl x => = (x,
+0) | inr b => not b in
+let rec evenOdd : ((int -> bool) * (int -> bool)) =
+(fn x : int => if f (inl (bool) x) then true else ((snd evenOdd) (- (x,
+1))),
+fn x : int => if not (f (inr (int) (= (x, 0)))) then false else ((fst
+evenOdd) (- (x, 1)))) in
+(fst evenOdd) 18;
